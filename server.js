@@ -1,9 +1,11 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import { config as dotenvConfig } from 'dotenv';
 import authenticationRoutes from './src/routes/authentication.routes.js';
+import connectDB from './src/config/db.js';
 
 const app = express();
+dotenvConfig();
 
 var corsOptions = {
   origin: process.env.PORT,
@@ -17,12 +19,7 @@ app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 
-dotenv.config();
-
-// simple route
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to the backends.' });
-});
+connectDB();
 
 app.use(authenticationRoutes);
 
