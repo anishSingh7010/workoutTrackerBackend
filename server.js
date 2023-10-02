@@ -1,15 +1,13 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { config as dotenvConfig } from 'dotenv';
 import authenticationRoutes from './src/routes/authentication.routes.js';
 import connectDB from './src/config/db.js';
+import corsOptions from './src/config/corsOptions.js';
 
 const app = express();
 dotenvConfig();
-
-var corsOptions = {
-  origin: process.env.PORT,
-};
 
 app.use(cors(corsOptions));
 
@@ -18,6 +16,8 @@ app.use(express.json());
 
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
+
+app.use(cookieParser());
 
 connectDB();
 

@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-const getAccessToken = (email) => {
+const generateAccessToken = (email) => {
   return jwt.sign(
     {
       email: email,
@@ -10,7 +10,7 @@ const getAccessToken = (email) => {
   );
 };
 
-const getRefreshToken = (email) => {
+const generateRefreshToken = (email) => {
   return jwt.sign(
     {
       email: email,
@@ -20,4 +20,18 @@ const getRefreshToken = (email) => {
   );
 };
 
-export { getAccessToken, getRefreshToken };
+const verify = async (token, secretKey) => {
+  let isError = false;
+  let result;
+  let errorMsg = '';
+  try {
+    result = await jwt.verify(token, secretKey);
+  } catch (err) {
+    // catching errors while validating
+    isError = true;
+    errorMsg = err.message;
+  }
+  return { isError, errorMsg, result };
+};
+
+export { generateAccessToken, generateRefreshToken, verify };

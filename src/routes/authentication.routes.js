@@ -1,5 +1,10 @@
 import { Router } from 'express';
-import { loginUser, registerUser } from '../controllers/users.controller.js';
+import {
+  loginUser,
+  registerUser,
+  useRefreshToken,
+  logoutUser,
+} from '../controllers/users.controller.js';
 import {
   validateNewUser,
   validateLoginUser,
@@ -22,6 +27,17 @@ app.post('/login', validateLoginUser, loginUser);
 // test route for jwt
 app.get('/workouts', verifyJWT, (req, res) => {
   // user will be available in the req if you use verifyJWT
+  return res.status(200).json({ success: true });
 });
+
+/* route: '/refresh-token'
+ * controller - useRefreshToken: Grants a new access token if the refresh token is valid
+ */
+app.post('/refresh-token', useRefreshToken);
+
+/* route: '/logout'
+ * controller - logoutUser: Logs the user out and deletes their access token and refresh token
+ */
+app.post('/logout', logoutUser);
 
 export default app;

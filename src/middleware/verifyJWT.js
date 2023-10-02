@@ -1,6 +1,7 @@
-import jwt from 'jsonwebtoken';
+import { verify } from '../util/jwtHelper.js';
+import { logEvents } from './logger.js';
 
-const verifyJWT = (req, res, next) => {
+const verifyJWT = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   // invalid token if it doesnt begin with Bearer
@@ -9,13 +10,17 @@ const verifyJWT = (req, res, next) => {
   }
 
   const token = authHeader.split(' ')[1];
-  console.log(token);
 
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ msg: 'Forbidden request' });
-    req.user = user;
-    next();
-  });
+  const { isError, errorMsg, result } = await verify(
+    token,
+    process.env.ACCESS_TOKEN_SECRET
+  );
+  if (isError) {
+    logEvents(req, errorMsg, 'debugLogs');
+    return res.status(403).json({ msg: 'Forbidden request', error: errorMsg });
+  }
+  req.user = result.user;
+  next();
 };
 
 export default verifyJWT;
