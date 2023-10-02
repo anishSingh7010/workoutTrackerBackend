@@ -10,6 +10,7 @@ import {
   validateLoginUser,
 } from '../middleware/validateNewUser.js';
 import verifyJWT from '../middleware/verifyJWT.js';
+import { verifyAdmin } from '../middleware/verifyAdmin.js';
 
 const app = Router();
 
@@ -25,7 +26,7 @@ app.post('/register', validateNewUser, registerUser);
 app.post('/login', validateLoginUser, loginUser);
 
 // test route for jwt
-app.get('/workouts', verifyJWT, (req, res) => {
+app.get('/workouts', verifyJWT, verifyAdmin, (req, res) => {
   // user will be available in the req if you use verifyJWT
   return res.status(200).json({ success: true });
 });

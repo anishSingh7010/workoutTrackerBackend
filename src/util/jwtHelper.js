@@ -1,19 +1,21 @@
 import jwt from 'jsonwebtoken';
 
-const generateAccessToken = (email) => {
+const generateAccessToken = (email, role) => {
   return jwt.sign(
     {
       email: email,
+      role: role,
     },
     process.env.ACCESS_TOKEN_SECRET,
     { expiresIn: '10m' }
   );
 };
 
-const generateRefreshToken = (email) => {
+const generateRefreshToken = (email, role) => {
   return jwt.sign(
     {
       email: email,
+      role: role,
     },
     process.env.REFRESH_TOKEN_SECRET,
     { expiresIn: '1d' }

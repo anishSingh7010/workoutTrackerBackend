@@ -20,6 +20,7 @@ const verifyJWT = async (req, res, next) => {
     return res.status(403).json({ msg: 'Forbidden request', error: errorMsg });
   }
   req.user = result.user;
+  req.role = result.role;
   next();
 };
 

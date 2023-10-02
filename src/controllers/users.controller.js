@@ -40,8 +40,6 @@ const registerUser = async (req, res) => {
     name: req.body.name,
     email: req.body.email,
     password: hashedPassword,
-    roles: ['User'],
-    active: false,
   };
 
   const user = new User(userDetailsJSON);
@@ -93,8 +91,8 @@ const loginUser = async (req, res) => {
     return;
   }
 
-  const accessToken = generateAccessToken(user.email);
-  const refreshToken = generateRefreshToken(user.email);
+  const accessToken = generateAccessToken(user.email, user.role);
+  const refreshToken = generateRefreshToken(user.email, user.role);
 
   // setting the refresh token
   res.cookie('jwt', refreshToken, {
@@ -137,11 +135,12 @@ const useRefreshToken = async (req, res) => {
     return res.status(401).json({ status: 'FAILED', msg: 'Invalid user' });
   }
 
-  const newAccessToken = generateAccessToken(user.email);
+  const newAccessToken = generateAccessToken(user.email, user.role);
   return res.status(200).json({
     status: 'SUCCESS',
     msg: 'New token generated!',
     token: newAccessToken,
+    role: user.role,
   });
 };
 
