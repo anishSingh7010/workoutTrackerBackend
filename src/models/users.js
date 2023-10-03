@@ -9,6 +9,7 @@ const userSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  uniqueActivationId: { type: String },
 });
 
 export default model('User', userSchema);

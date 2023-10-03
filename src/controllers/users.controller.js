@@ -1,5 +1,6 @@
 import { validationResult } from 'express-validator';
 import bcrypt from 'bcrypt';
+import { v4 as uuid } from 'uuid';
 import User from '../models/users.js';
 import {
   generateAccessToken,
@@ -7,6 +8,7 @@ import {
   verify,
 } from '../util/jwtHelper.js';
 import { logEvents } from '../middleware/logger.js';
+import { getHashedString, sendActivationLink } from '../util/accountHelper.js';
 
 const registerUser = async (req, res) => {
   const errors = validationResult(req);
@@ -25,7 +27,7 @@ const registerUser = async (req, res) => {
 
   let hashedPassword = '';
   try {
-    hashedPassword = await getHashedPassword(req.body.password);
+    hashedPassword = await getHashedString(req.body.password);
   } catch (error) {
     // server log error about hashing
     logEvents(req, error, 'errorLogs');
@@ -46,6 +48,10 @@ const registerUser = async (req, res) => {
 
   try {
     const newUser = await user.save();
+    const activationEmailResult = await sendActivationLink(newUser, req);
+    if (activationEmailResult.error) {
+      throw new Error('Error sending activation email');
+    }
     res.status(201).json({
       status: 'SUCCESS',
       msg: 'User created successfully',
@@ -53,6 +59,8 @@ const registerUser = async (req, res) => {
     });
   } catch (error) {
     logEvents(req, error, 'errorLogs');
+    // delete user if activation link fails to send
+    user.deleteOne();
     res.status(500).json({ status: 'FAILED', message: error.message });
   }
 
@@ -87,6 +95,15 @@ const loginUser = async (req, res) => {
     res.status(401).json({
       status: 'FAILURE',
       msg: 'This combination of email/password is invalid',
+    });
+    return;
+  }
+
+  // if user hasnt activated their account yet
+  if (!user.active) {
+    res.status(400).json({
+      status: 'FAILED',
+      msg: 'Please activate your account before logging in',
     });
     return;
   }
@@ -144,6 +161,37 @@ const useRefreshToken = async (req, res) => {
   });
 };
 
+const activateAccount = async (req, res) => {
+  const { userId, uniqueString } = req.params;
+  const userObject = await User.findOne({ _id: userId });
+  if (!userObject) {
+    return res.status(404).json({
+      status: 'FAILED',
+      msg: 'User does not exists',
+    });
+  }
+  const isUniqueStringValid = await bcrypt.compare(
+    uniqueString,
+    userObject.uniqueActivationId
+  );
+
+  if (!isUniqueStringValid) {
+    return res.status(400).json({
+      status: 'FAILED',
+      msg: 'Invalid activation id',
+    });
+  }
+
+  userObject.active = true;
+  userObject.uniqueActivationId = '';
+  await userObject.save();
+
+  return res.status(200).json({
+    status: 'SUCCESS',
+    msg: 'Account activated successfully',
+  });
+};
+
 const logoutUser = (req, res) => {
   const refreshToken = req.cookies['jwt'];
   // no refresh token found
@@ -157,10 +205,10 @@ const logoutUser = (req, res) => {
   });
 };
 
-const getHashedPassword = async (password) => {
-  const saltRounds = 10;
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
-  return hashedPassword;
+export {
+  registerUser,
+  loginUser,
+  useRefreshToken,
+  logoutUser,
+  activateAccount,
 };
-
-export { registerUser, loginUser, useRefreshToken, logoutUser };

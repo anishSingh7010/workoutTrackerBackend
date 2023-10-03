@@ -4,6 +4,7 @@ import {
   registerUser,
   useRefreshToken,
   logoutUser,
+  activateAccount,
 } from '../controllers/users.controller.js';
 import {
   validateNewUser,
@@ -35,6 +36,11 @@ app.get('/workouts', verifyJWT, verifyAdmin, (req, res) => {
  * controller - useRefreshToken: Grants a new access token if the refresh token is valid
  */
 app.post('/refresh-token', useRefreshToken);
+
+/**
+ *
+ */
+app.get('/verify/:userId/:uniqueString', activateAccount);
 
 /* route: '/logout'
  * controller - logoutUser: Logs the user out and deletes their access token and refresh token
