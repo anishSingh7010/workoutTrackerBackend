@@ -1,6 +1,5 @@
 import { validationResult } from 'express-validator';
 import bcrypt from 'bcrypt';
-import { v4 as uuid } from 'uuid';
 import User from '../models/users.js';
 import {
   generateAccessToken,
@@ -8,7 +7,11 @@ import {
   verify,
 } from '../util/jwtHelper.js';
 import { logEvents } from '../middleware/logger.js';
-import { getHashedString, sendActivationLink } from '../util/accountHelper.js';
+import {
+  getHashedString,
+  sendActivationLink,
+  sendResetPasswordLink,
+} from '../util/accountHelper.js';
 
 const registerUser = async (req, res) => {
   const errors = validationResult(req);
@@ -50,7 +53,7 @@ const registerUser = async (req, res) => {
     const newUser = await user.save();
     const activationEmailResult = await sendActivationLink(newUser, req);
     if (activationEmailResult.error) {
-      throw new Error('Error sending activation email');
+      throw new Error(activationEmailResult.errorMsg);
     }
     res.status(201).json({
       status: 'SUCCESS',
@@ -61,7 +64,10 @@ const registerUser = async (req, res) => {
     logEvents(req, error, 'errorLogs');
     // delete user if activation link fails to send
     user.deleteOne();
-    res.status(500).json({ status: 'FAILED', message: error.message });
+    res.status(500).json({
+      status: 'FAILED',
+      message: 'Something went wrong! Please try again.',
+    });
   }
 
   return;
@@ -170,6 +176,14 @@ const activateAccount = async (req, res) => {
       msg: 'User does not exists',
     });
   }
+
+  if (userObject.active) {
+    return res.status(400).json({
+      status: 'FAILED',
+      msg: 'Account is already active.',
+    });
+  }
+
   const isUniqueStringValid = await bcrypt.compare(
     uniqueString,
     userObject.uniqueActivationId
@@ -205,10 +219,98 @@ const logoutUser = (req, res) => {
   });
 };
 
+const resetPasswordRequest = async (req, res) => {
+  const { email } = req.body;
+  // check if user is in the database
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({
+      status: 'FAILED',
+      msg: 'User does not exist',
+    });
+  }
+
+  const resetPasswordRequestResult = await sendResetPasswordLink(user, req);
+  if (resetPasswordRequestResult.error) {
+    return res.status(500).json({
+      status: 'FAILED',
+      msg: 'Something went wrong. Please try again.',
+    });
+  }
+  return res.status(200).json({
+    status: 'SUCCESS',
+    msg: 'Reset Password Email Sent',
+    email: user.email,
+  });
+};
+
+const resetPassword = async (req, res) => {
+  // checking if password and confirmPassword are validated
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    res.status(400).json(errors.array());
+    return;
+  }
+
+  const { userId, uniqueString } = req.params;
+  const { password } = req.body;
+
+  const user = await User.findOne({ _id: userId });
+  if (!user) {
+    return res.status(404).json({
+      status: 'FAILED',
+      msg: 'User not found',
+    });
+  }
+
+  if (!user.resetPasswordId) {
+    return res.status(400).json({
+      status: 'FAILED',
+      msg: 'No reset request ID found. Request for reset password.',
+    });
+  }
+
+  // if user found, compare the uniqueString with database
+  const isMatch = await bcrypt.compare(uniqueString, user.resetPasswordId);
+
+  if (!isMatch) {
+    return res.status(400).json({
+      status: 'FALIED',
+      msg: 'Invalid request password id',
+    });
+  }
+
+  // hash and save new password
+  let hashedPassword = '';
+  try {
+    hashedPassword = await getHashedString(password);
+  } catch (error) {
+    // server log error about hashing
+    logEvents(req, error, 'errorLogs');
+    res.status(500).json({
+      status: 'FAILED',
+      msg: 'Something went wrong. Please try again!',
+    });
+    return;
+  }
+
+  // updating password and reset password ID
+  user.password = hashedPassword;
+  user.resetPasswordId = '';
+  user.save();
+  return res.status(201).json({
+    status: 'SUCCESS',
+    msg: 'Password changed successfully',
+  });
+};
+
 export {
   registerUser,
   loginUser,
   useRefreshToken,
   logoutUser,
   activateAccount,
+  resetPasswordRequest,
+  resetPassword,
 };

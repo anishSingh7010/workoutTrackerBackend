@@ -9,7 +9,8 @@ const userSchema = new Schema({
     type: Boolean,
     default: false,
   },
-  uniqueActivationId: { type: String },
+  uniqueActivationId: { type: String, default: '' },
+  resetPasswordId: { type: String, default: '' },
 });
 
 export default model('User', userSchema);

@@ -5,10 +5,13 @@ import {
   useRefreshToken,
   logoutUser,
   activateAccount,
+  resetPasswordRequest,
+  resetPassword,
 } from '../controllers/users.controller.js';
 import {
   validateNewUser,
   validateLoginUser,
+  validateResetPassword,
 } from '../middleware/validateNewUser.js';
 import verifyJWT from '../middleware/verifyJWT.js';
 import { verifyAdmin } from '../middleware/verifyAdmin.js';
@@ -38,9 +41,26 @@ app.get('/workouts', verifyJWT, verifyAdmin, (req, res) => {
 app.post('/refresh-token', useRefreshToken);
 
 /**
- *
+ * route: '/verify/:userId:uniqueString'
+ * controller - activateAccount: Checks if the userId and uniqueString are valid and then changes the account state to active
  */
 app.get('/verify/:userId/:uniqueString', activateAccount);
+
+/**
+ * route: '/verify/:userId:uniqueString'
+ * controller - activateAccount: Checks if the userId and uniqueString are valid and then changes the account state to active
+ */
+app.post('/reset-password-request', resetPasswordRequest);
+
+/**
+ * route: '/verify/:userId:uniqueString'
+ * controller - activateAccount: Checks if the userId and uniqueString are valid and then changes the account state to active
+ */
+app.post(
+  '/reset-password/:userId/:uniqueString',
+  validateResetPassword,
+  resetPassword
+);
 
 /* route: '/logout'
  * controller - logoutUser: Logs the user out and deletes their access token and refresh token

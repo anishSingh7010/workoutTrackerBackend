@@ -40,17 +40,62 @@ const sendActivationLink = async (userObject, req) => {
     };
   }
 
-  const url = `http://localhost:${process.env.PORT}`;
   userObject.uniqueActivationId = hashedUniqueString;
   userObject.save();
 
+  const url = `http://localhost:${process.env.PORT}`;
+  const path = '/account/verify/';
+  const emailHTML = `<p>Activate your account by clicking on the below link</p></br><a target="blank" href=${
+    url + path + userId + '/' + uniqueString
+  }>Click here</a>`;
+
+  return await sendEmail(userObject.email, emailHTML, req);
+};
+
+const sendResetPasswordLink = async (userObject, req) => {
+  // unique string formed with uuid library + document id of the user from mongodb
+  const userId = userObject['_id'];
+  const uniqueString = uuid() + userId;
+  // hash the unique id using bcrypt
+  let hashedUniqueString = '';
+  try {
+    hashedUniqueString = await getHashedString(uniqueString);
+  } catch (error) {
+    // server log error about hashing
+    logEvents(req, error, 'errorLogs');
+    return {
+      error: true,
+      errorMsg: error,
+    };
+  }
+
+  userObject.resetPasswordId = hashedUniqueString;
+  userObject.save();
+
+  const url = `http://localhost:${process.env.PORT}`;
+  const path = '/account/reset-password/';
+  const emailHTML = `<p>Reset your password by clicking on the below link</p></br><a target="blank" href=${
+    url + path + userId + '/' + uniqueString
+  }>Click here</a>`;
+
+  return await sendEmail(userObject.email, emailHTML, req);
+};
+
+/**
+ *
+ * @param {String} email
+ * @param {String} userId
+ * @param {String} uniqueString
+ * @param {String} path
+ * @param {Object} req
+ * @returns {Promise} object
+ */
+const sendEmail = async (email, emailHTML, req) => {
   const mailOptions = {
     from: process.env.NODEMAILER_EMAIL,
-    to: userObject.email,
+    to: email,
     subject: 'Activate Account',
-    html: `<p>Activate your account by clicking on the below link</p></br><a target="blank" href=${
-      url + '/account/verify/' + userId + '/' + uniqueString
-    }>Click here</a>`,
+    html: emailHTML,
   };
 
   const transporter = nodemailer.createTransport({
@@ -78,4 +123,4 @@ const sendActivationLink = async (userObject, req) => {
     });
 };
 
-export { getHashedString, sendActivationLink };
+export { getHashedString, sendActivationLink, sendResetPasswordLink };

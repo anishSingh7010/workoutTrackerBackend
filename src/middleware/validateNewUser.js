@@ -39,4 +39,24 @@ const validateLoginUser = [
   body('password').not().isEmpty().withMessage('Password is a required field.'),
 ];
 
-export { validateNewUser, validateLoginUser };
+const validateResetPassword = [
+  body('password')
+    .not()
+    .isEmpty()
+    .withMessage('Password is a required field.')
+    .bail()
+    .isLength({ min: 8 })
+    .withMessage('Password is too short.'),
+  body('confirmPassword')
+    .not()
+    .isEmpty()
+    .withMessage('Confirm Password is a required field.')
+    .bail()
+    .custom((value, { req }) => {
+      if (value !== req.body.password)
+        throw new Error('Passwords do not match');
+      return true;
+    }),
+];
+
+export { validateNewUser, validateLoginUser, validateResetPassword };
