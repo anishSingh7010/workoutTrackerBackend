@@ -1,6 +1,6 @@
-import { Schema, model } from 'mongoose';
+import mongoose from 'mongoose';
 
-const userSchema = new Schema({
+const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true },
   password: { type: String, required: true },
@@ -13,4 +13,11 @@ const userSchema = new Schema({
   resetPasswordId: { type: String, default: '' },
 });
 
-export default model('User', userSchema);
+let userModel = mongoose.model('User', userSchema);
+
+// connecting to test database while testing with mocha and chai
+if (process.env.NODE_ENV === 'test') {
+  userModel = mongoose.connection.useDb('test').model('User', userSchema);
+}
+
+export default userModel;

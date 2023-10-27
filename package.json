@@ -4,7 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "devStart": "nodemon server.js"
+    "devStart": "nodemon server.js",
+    "test": "cross-env NODE_ENV=test mocha --exit"
   },
   "keywords": [],
   "author": "",
@@ -23,7 +24,11 @@
   },
   "type": "module",
   "devDependencies": {
+    "chai": "^4.3.10",
+    "chai-http": "^4.4.0",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.3.1",
+    "mocha": "^10.2.0",
     "nodemon": "^3.0.1"
   }
 }
