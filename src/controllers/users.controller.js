@@ -24,7 +24,7 @@ const registerUser = async (req, res) => {
   // email shouldnt exist already in database
   const userExists = await User.find({ email: req.body.email }).lean();
   if (userExists.length) {
-    res.status(409).json({ path: 'email', msg: 'User already exists' });
+    res.status(409).json([{ path: 'email', msg: 'User already exists' }]);
     return;
   }
 
@@ -64,10 +64,12 @@ const registerUser = async (req, res) => {
     logEvents(req, error, 'errorLogs');
     // delete user if activation link fails to send
     user.deleteOne();
-    res.status(500).json({
-      status: 'FAILED',
-      message: 'Something went wrong! Please try again.',
-    });
+    res.status(500).json([
+      {
+        status: 'FAILED',
+        message: 'Something went wrong! Please try again.',
+      },
+    ]);
   }
 
   return;
@@ -86,10 +88,13 @@ const loginUser = async (req, res) => {
 
   // if user doesnt exist
   if (!user) {
-    res.status(401).json({
-      status: 'FAILURE',
-      msg: 'This combination of email/password is invalid',
-    });
+    res.status(401).json([
+      {
+        status: 'FAILURE',
+        msg: 'This combination of email/password is invalid',
+        path: 'email',
+      },
+    ]);
     return;
   }
 
@@ -98,19 +103,25 @@ const loginUser = async (req, res) => {
     user.password
   );
   if (!isPasswordValid) {
-    res.status(401).json({
-      status: 'FAILURE',
-      msg: 'This combination of email/password is invalid',
-    });
+    res.status(401).json([
+      {
+        status: 'FAILURE',
+        msg: 'This combination of email/password is invalid',
+        path: 'email',
+      },
+    ]);
     return;
   }
 
   // if user hasnt activated their account yet
   if (!user.active) {
-    res.status(400).json({
-      status: 'FAILED',
-      msg: 'Please activate your account before logging in',
-    });
+    res.status(400).json([
+      {
+        status: 'FAILED',
+        msg: 'Please activate your account before logging in',
+        path: 'email',
+      },
+    ]);
     return;
   }
 
@@ -118,15 +129,22 @@ const loginUser = async (req, res) => {
   const refreshToken = generateRefreshToken(user.email, user.role);
 
   // setting the refresh token
-  res.cookie('jwt', refreshToken, {
-    httpOnly: true, // accessible by web server only
-    secure: true,
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-
   res
+    .cookie('jwt', refreshToken, {
+      httpOnly: true, // accessible by web server only
+      //secure: true, //disabled because of localhost testing
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/',
+    })
     .status(200)
-    .json({ status: 'SUCCESS', msg: 'Login Successful!', token: accessToken });
+    .json({
+      status: 'SUCCESS',
+      msg: 'Login Successful!',
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      name: user.name,
+    });
+
   return;
 };
 

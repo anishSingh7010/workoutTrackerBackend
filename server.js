@@ -21,7 +21,7 @@ app.use(cookieParser());
 
 connectDB();
 
-app.use('/account', authenticationRoutes);
+app.use(authenticationRoutes);
 
 // set port, listen for requests
 const PORT = process.env.PORT;

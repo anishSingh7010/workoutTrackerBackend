@@ -30,7 +30,7 @@ app.post('/register', validateNewUser, registerUser);
 app.post('/login', validateLoginUser, loginUser);
 
 // test route for jwt
-app.get('/workouts', verifyJWT, verifyAdmin, (req, res) => {
+app.get('/workouts', verifyJWT, (req, res) => {
   // user will be available in the req if you use verifyJWT
   return res.status(200).json({ success: true });
 });

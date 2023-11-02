@@ -17,7 +17,7 @@ const verifyJWT = async (req, res, next) => {
   );
   if (isError) {
     logEvents(req, errorMsg, 'debugLogs');
-    return res.status(403).json({ msg: 'Forbidden request', error: errorMsg });
+    return res.status(401).json({ msg: 'Unauthorized', error: errorMsg });
   }
   req.user = result.user;
   req.role = result.role;
