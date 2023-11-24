@@ -44,7 +44,7 @@ const sendActivationLink = async (userObject, req) => {
   userObject.save();
 
   const url = `http://localhost:${process.env.PORT}`;
-  const path = '/account/verify/';
+  const path = '/verify/';
   const emailHTML = `<p>Activate your account by clicking on the below link</p></br><a target="blank" href=${
     url + path + userId + '/' + uniqueString
   }>Click here</a>`;
