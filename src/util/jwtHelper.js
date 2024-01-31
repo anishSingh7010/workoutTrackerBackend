@@ -7,7 +7,8 @@ const generateAccessToken = (email, role) => {
       role: role,
     },
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: '10m' }
+    // change later
+    { expiresIn: '1h' }
   );
 };
 

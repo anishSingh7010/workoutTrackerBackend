@@ -19,7 +19,7 @@ const verifyJWT = async (req, res, next) => {
     logEvents(req, errorMsg, 'debugLogs');
     return res.status(401).json({ msg: 'Unauthorized', error: errorMsg });
   }
-  req.user = result.user;
+  req.userEmail = result.email;
   req.role = result.role;
   next();
 };

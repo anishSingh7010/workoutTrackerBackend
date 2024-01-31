@@ -3,6 +3,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { config as dotenvConfig } from 'dotenv';
 import authenticationRoutes from './src/routes/authentication.routes.js';
+import exerciseRoutes from './src/routes/exercise.routes.js';
+import workoutRoutes from './src/routes/workouts.routes.js';
 import connectDB from './src/config/db.js';
 import corsOptions from './src/config/corsOptions.js';
 
@@ -22,6 +24,8 @@ app.use(cookieParser());
 connectDB();
 
 app.use(authenticationRoutes);
+app.use('/account', exerciseRoutes);
+app.use('/account', workoutRoutes);
 
 // set port, listen for requests
 const PORT = process.env.PORT;
