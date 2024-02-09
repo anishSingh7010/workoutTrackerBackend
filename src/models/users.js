@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
 const exerciseSchema = {
   exerciseType: {
@@ -16,7 +16,7 @@ const workoutSchema = {
       // reps[0] and weights[0] would be first set
       reps: [Number],
       weights: [Number],
-      exercise: exerciseSchema,
+      _exercise: Schema.ObjectId,
     },
   ],
   volume: Number,

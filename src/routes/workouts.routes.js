@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import verifyJWT from '../middleware/verifyJWT.js';
+import { addWorkout, getWorkouts } from '../controllers/workouts.controller.js';
+import { validateWorkout } from '../middleware/validateWorkout.js';
 
 const app = Router();
 
@@ -13,6 +15,6 @@ app.get('/workouts', verifyJWT, getWorkouts);
  * middleware - verifyJWT: checks if the user is logged in and has a valid auth token
  * controller - addWorkout: adds the workout into the user model object
  */
-app.get('/exercises', verifyJWT, addWorkout);
+app.post('/workouts', verifyJWT, validateWorkout, addWorkout);
 
 export default app;

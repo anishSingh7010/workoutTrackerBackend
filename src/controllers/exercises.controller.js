@@ -25,7 +25,6 @@ const addExercise = async (req, res) => {
     });
   }
 
-  //const result = validationResult(req);
   const exerciseJSON = {
     name: req.body.exerciseName,
     type: req.body.exerciseType,
