@@ -9,7 +9,7 @@ export const validateExercise = [
     .not()
     .isEmpty()
     .withMessage('Exercise type is a required field.')
-    .isIn('push', 'pull', 'legs')
+    .isIn(['push', 'pull', 'legs'])
     .withMessage(
       'Exercise type needs to be one of the following: push, pull or legs'
     ),

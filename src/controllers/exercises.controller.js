@@ -35,6 +35,7 @@ const addExercise = async (req, res) => {
   return res.status(200).json({
     status: 'SUCCESS',
     msg: 'Exercise added successfully',
+    exercises: user.exercises,
   });
 };
 
@@ -90,6 +91,7 @@ const deleteExercise = async (req, res) => {
   return res.status(200).json({
     status: 'SUCCESS',
     msg: 'Exercises deleted successfully',
+    exercises: user.exercises,
   });
 };
 
