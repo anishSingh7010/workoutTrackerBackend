@@ -1,7 +1,8 @@
-# workoutTrackerBackend
+# workoutTrackerBackend (MERN stack)
 
 APIs written in NodeJS to support authentication and authorization, access and refresh tokens. Also, contains APIs for adding/removing workouts or exercises.
 JWT for authorization.
 Node Express library for rest apis.
+MongoDB database.
 
 Link to react app: https://github.com/anishSingh7010/workoutTracker
